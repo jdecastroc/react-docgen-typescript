@@ -14,6 +14,38 @@ export interface IColumnProps {
   prop3: () => void;
   /** prop4 description */
   prop4: 'option1' | 'option2' | 'option3';
+  prop5: enumSample;
+  prop6: Sizes;
+  prop7: MyOwnInterface;
+}
+
+export enum enumSample {
+  HELLO = 'hi',
+  BYE = 'bye'
+}
+
+interface MyOwnInterface {
+  name: string;
+  size: Sizes;
+  layout: Layout;
+}
+
+type Sizes = 'M' | 'L';
+
+/**
+ * @param width hola que tal
+ */
+interface Layout {
+  /** width description */
+  width: number;
+  height: string;
+  axis: Otro;
+}
+
+interface Otro {
+  x: number;
+  y: number;
+  other: 'x' | 'y';
 }
 
 /**

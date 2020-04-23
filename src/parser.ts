@@ -79,6 +79,7 @@ export interface ParserOptions {
   propFilter?: StaticPropFilter | PropFilter;
   componentNameResolver?: ComponentNameResolver;
   shouldExtractLiteralValuesFromEnum?: boolean;
+  shouldExtractValuesFromInterfaces?: boolean;
   savePropValueAsString?: boolean;
 }
 
@@ -137,7 +138,9 @@ export function withCustomConfig(
 
   if (error !== undefined) {
     // tslint:disable-next-line: max-line-length
-    const errorText = `Cannot load custom tsconfig.json from provided path: ${tsconfigPath}, with error code: ${error.code}, message: ${error.messageText}`;
+    const errorText = `Cannot load custom tsconfig.json from provided path: ${tsconfigPath}, with error code: ${
+      error.code
+    }, message: ${error.messageText}`;
     throw new Error(errorText);
   }
 
@@ -198,14 +201,22 @@ export class Parser {
   private checker: ts.TypeChecker;
   private propFilter: PropFilter;
   private shouldExtractLiteralValuesFromEnum: boolean;
+  private shouldExtractValuesFromInterfaces: boolean;
   private savePropValueAsString: boolean;
 
   constructor(program: ts.Program, opts: ParserOptions) {
-    const { savePropValueAsString, shouldExtractLiteralValuesFromEnum } = opts;
+    const {
+      savePropValueAsString,
+      shouldExtractLiteralValuesFromEnum,
+      shouldExtractValuesFromInterfaces
+    } = opts;
     this.checker = program.getTypeChecker();
     this.propFilter = buildFilter(opts);
     this.shouldExtractLiteralValuesFromEnum = Boolean(
       shouldExtractLiteralValuesFromEnum
+    );
+    this.shouldExtractValuesFromInterfaces = Boolean(
+      shouldExtractValuesFromInterfaces
     );
     this.savePropValueAsString = Boolean(savePropValueAsString);
   }
@@ -465,6 +476,51 @@ export class Parser {
 
   public getDocgenType(propType: ts.Type): PropItemType {
     const propTypeString = this.checker.typeToString(propType);
+    if (
+      this.shouldExtractValuesFromInterfaces &&
+      propType.isClassOrInterface()
+    ) {
+      const interfaceChildren: PropItem[] = [];
+      const symbol = propType.symbol;
+      if (symbol && symbol.members) {
+        symbol.members.forEach(member => {
+          const memberType = this.checker.getTypeOfSymbolAtLocation(
+            member,
+            member.declarations[0].getChildAt(0)
+          );
+          const typeNode = this.checker.typeToTypeNode(memberType);
+          const isInterface =
+            !(memberType as ts.UnionOrIntersectionType).types &&
+            typeNode &&
+            typeNode.kind === ts.SyntaxKind.TypeReference;
+          // tslint:disable-next-line: no-bitwise
+          const isOptional =
+            (member.getFlags() & ts.SymbolFlags.Optional) !== 0;
+          const jsDocComment = this.findDocComment(member);
+          interfaceChildren.push({
+            defaultValue: jsDocComment.tags.default
+              ? { value: jsDocComment.tags.default }
+              : null,
+            description: jsDocComment.fullComment,
+            name: member.escapedName as string,
+            parent: getParentType(member),
+            required: !isOptional,
+            type: isInterface
+              ? {
+                  name: 'interface',
+                  raw: this.checker.typeToString(memberType),
+                  value: this.getPropsInfo(member)
+                }
+              : this.getDocgenType(memberType)
+          });
+        });
+      }
+      return {
+        name: 'interface',
+        raw: propTypeString,
+        value: interfaceChildren
+      };
+    }
 
     if (
       this.shouldExtractLiteralValuesFromEnum &&
@@ -683,9 +739,9 @@ export class Parser {
         let propMap = {};
 
         if (properties) {
-          propMap = this.getPropMap(
-            properties as ts.NodeArray<ts.PropertyAssignment>
-          );
+          propMap = this.getPropMap(properties as ts.NodeArray<
+            ts.PropertyAssignment
+          >);
         }
 
         return {
@@ -699,9 +755,9 @@ export class Parser {
           if (right) {
             const { properties } = right as ts.ObjectLiteralExpression;
             if (properties) {
-              propMap = this.getPropMap(
-                properties as ts.NodeArray<ts.PropertyAssignment>
-              );
+              propMap = this.getPropMap(properties as ts.NodeArray<
+                ts.PropertyAssignment
+              >);
             }
           }
         });
@@ -788,26 +844,31 @@ export class Parser {
   public getPropMap(
     properties: ts.NodeArray<ts.PropertyAssignment | ts.BindingElement>
   ): StringIndexedObject<string | boolean | number | null> {
-    const propMap = properties.reduce((acc, property) => {
-      if (ts.isSpreadAssignment(property) || !property.name) {
+    const propMap = properties.reduce(
+      (acc, property) => {
+        if (ts.isSpreadAssignment(property) || !property.name) {
+          return acc;
+        }
+
+        const literalValue = this.getLiteralValueFromPropertyAssignment(
+          property
+        );
+        const propertyName = getPropertyName(property.name);
+
+        if (
+          (typeof literalValue === 'string' ||
+            typeof literalValue === 'number' ||
+            typeof literalValue === 'boolean' ||
+            literalValue === null) &&
+          propertyName !== null
+        ) {
+          acc[propertyName] = literalValue;
+        }
+
         return acc;
-      }
-
-      const literalValue = this.getLiteralValueFromPropertyAssignment(property);
-      const propertyName = getPropertyName(property.name);
-
-      if (
-        (typeof literalValue === 'string' ||
-          typeof literalValue === 'number' ||
-          typeof literalValue === 'boolean' ||
-          literalValue === null) &&
-        propertyName !== null
-      ) {
-        acc[propertyName] = literalValue;
-      }
-
-      return acc;
-    }, {} as StringIndexedObject<string | boolean | number | null>);
+      },
+      {} as StringIndexedObject<string | boolean | number | null>
+    );
 
     return propMap;
   }
