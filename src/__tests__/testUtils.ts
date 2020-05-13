@@ -1,12 +1,7 @@
 import { assert } from 'chai';
 import { isEqual } from 'lodash';
 import * as path from 'path';
-import {
-  ComponentDoc,
-  defaultParserOpts,
-  parse,
-  ParserOptions
-} from '../parser';
+import { ComponentDoc, parse, ParserOptions, PropItemType } from '../parser';
 
 export interface ExpectedComponents {
   [key: string]: ExpectedComponent;
@@ -17,7 +12,8 @@ export interface ExpectedComponent {
 }
 
 export interface ExpectedProp {
-  type: string;
+  type: string | PropItemType;
+  name?: string;
   required?: boolean;
   description?: string;
   defaultValue?: string | number | boolean | null | undefined;
@@ -49,14 +45,15 @@ export function check(
   parserOpts?: ParserOptions
 ) {
   const result = parse(fixturePath(componentName), parserOpts);
-  checkComponent(result, expected, exactProperties, description);
+  checkComponent(result, expected, exactProperties, description, parserOpts);
 }
 
 export function checkComponent(
   actual: ComponentDoc[],
   expected: ExpectedComponents,
   exactProperties: boolean = true,
-  description?: string | null
+  description?: string | null,
+  parserOpts?: ParserOptions
 ) {
   const expectedComponentNames = Object.getOwnPropertyNames(expected);
   assert.equal(
@@ -117,8 +114,11 @@ export function checkComponent(
       if (prop === undefined) {
         errors.push(`Property '${compName}.${expectedPropName}' is missing`);
       } else {
-        if (expectedProp.type !== prop.type.name) {
-          // tslint:disable-next-line:max-line-length
+        if (parserOpts && parserOpts.shouldExtractValuesFromInterfaces) {
+          if (JSON.stringify(expectedProp.type) !== JSON.stringify(prop.type)) {
+            errors.push(`Property type is different`);
+          }
+        } else if (expectedProp.type !== prop.type.name) {
           errors.push(
             `Property '${compName}.${expectedPropName}' type is different - expected: ${
               expectedProp.type

@@ -820,6 +820,232 @@ describe('parser', () => {
       });
     });
 
+    describe('Extracting values from interfaces', () => {
+      it('extracts values from interface', () => {
+        check(
+          'ExtractValuesFromInterface',
+          {
+            ExtractValuesFromInterface: {
+              sampleInterface: {
+                defaultValue: null,
+                description: 'sampleInterface description',
+                name: 'sampleInterface',
+                parent: {
+                  fileName:
+                    'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                  name: 'ExtractLiteralValuesFromEnumProps'
+                },
+                required: true,
+                type: {
+                  name: 'interface',
+                  raw: 'InterfaceSample',
+                  value: [
+                    {
+                      defaultValue: null,
+                      description: 'sampleString description',
+                      name: 'sampleString',
+                      parent: {
+                        fileName:
+                          'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                        name: 'InterfaceSample'
+                      },
+                      required: true,
+                      type: {
+                        name: 'string'
+                      }
+                    },
+                    {
+                      defaultValue: null,
+                      description: 'sampleNumber description',
+                      name: 'sampleNumber',
+                      parent: {
+                        fileName:
+                          'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                        name: 'InterfaceSample'
+                      },
+                      required: true,
+                      type: {
+                        name: 'number'
+                      }
+                    },
+                    {
+                      defaultValue: null,
+                      description: 'sample enum',
+                      name: 'sampleEnum',
+                      parent: {
+                        fileName:
+                          'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                        name: 'InterfaceSample'
+                      },
+                      required: true,
+                      type: {
+                        name: 'enum',
+                        raw: 'enumSample',
+                        value: [
+                          {
+                            value: '"hi"'
+                          },
+                          {
+                            value: '"bye"'
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      defaultValue: null,
+                      description: 'sampleNestedInterface description',
+                      name: 'sampleNestedInterface',
+                      parent: {
+                        fileName:
+                          'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                        name: 'InterfaceSample'
+                      },
+                      required: true,
+                      type: {
+                        name: 'interface',
+                        raw: 'NestedInterfaceSample',
+                        value: {
+                          sampleDefaultFromJSDoc: {
+                            defaultValue: {
+                              value: 'hello'
+                            },
+                            description: 'sample with default value',
+                            name: 'sampleDefaultFromJSDoc',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: true,
+                            type: {
+                              name: 'enum',
+                              raw: '"hello" | "goodbye"',
+                              value: [
+                                {
+                                  value: '"hello"'
+                                },
+                                {
+                                  value: '"goodbye"'
+                                }
+                              ]
+                            }
+                          },
+                          sampleTrue: {
+                            defaultValue: null,
+                            description: 'sampleTrue description',
+                            name: 'sampleTrue',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'boolean'
+                            }
+                          },
+                          sampleFalse: {
+                            defaultValue: null,
+                            description: 'sampleFalse description',
+                            name: 'sampleFalse',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'boolean'
+                            }
+                          },
+                          sampleString: {
+                            defaultValue: null,
+                            description: 'sampleString description',
+                            name: 'sampleString',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'string'
+                            }
+                          },
+                          sampleObject: {
+                            defaultValue: null,
+                            description: 'sampleObject description',
+                            name: 'sampleObject',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: '{ [key: string]: any; }'
+                            }
+                          },
+                          sampleNull: {
+                            defaultValue: null,
+                            description: 'sampleNull description',
+                            name: 'sampleNull',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'null'
+                            }
+                          },
+                          sampleUndefined: {
+                            defaultValue: null,
+                            description: 'sampleUndefined description',
+                            name: 'sampleUndefined',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'any'
+                            }
+                          },
+                          sampleNumber: {
+                            defaultValue: null,
+                            description: 'sampleNumber description',
+                            name: 'sampleNumber',
+                            parent: {
+                              fileName:
+                                'react-docgen-typescript/src/__tests__/data/ExtractValuesFromInterface.tsx',
+                              name: 'NestedInterfaceSample'
+                            },
+                            required: false,
+                            type: {
+                              name: 'number'
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          true,
+          null,
+          {
+            shouldExtractLiteralValuesFromEnum: true,
+            shouldExtractValuesFromInterfaces: true
+          }
+        );
+      });
+    });
+
     describe('Returning not string default props ', () => {
       it('returns not string defaultProps', () => {
         check(

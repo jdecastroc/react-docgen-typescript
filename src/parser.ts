@@ -493,10 +493,11 @@ export class Parser {
             !(memberType as ts.UnionOrIntersectionType).types &&
             typeNode &&
             typeNode.kind === ts.SyntaxKind.TypeReference;
-          // tslint:disable-next-line: no-bitwise
           const isOptional =
+            // tslint:disable-next-line: no-bitwise
             (member.getFlags() & ts.SymbolFlags.Optional) !== 0;
           const jsDocComment = this.findDocComment(member);
+          const typeValueProps = isInterface && this.getPropsInfo(member);
           interfaceChildren.push({
             defaultValue: jsDocComment.tags.default
               ? { value: jsDocComment.tags.default }
@@ -509,7 +510,9 @@ export class Parser {
               ? {
                   name: 'interface',
                   raw: this.checker.typeToString(memberType),
-                  value: this.getPropsInfo(member)
+                  value: Object.keys(typeValueProps).map(
+                    key => ((typeValueProps as unknown) as Props)[key]
+                  )
                 }
               : this.getDocgenType(memberType)
           });
